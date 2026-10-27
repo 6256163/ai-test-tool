@@ -1,0 +1,45 @@
+# AI 测试提效工具 —— P0 配置
+# 说明：api_key 一律走环境变量，勿硬编码进仓库。
+
+llm:
+  # 兼容 OpenAI Chat Completions 协议，可接 GPT / DeepSeek / 通义千问 / 本地 vLLM
+  base_url: "https://api.deepseek.com/v1"
+  api_key: "${LLM_API_KEY}"
+  model: "deepseek-chat"          # 私有化可换 qwen2.5-72b / 本地模型
+  max_retries: 3                  # 限流/超时退避
+  timeout: 60
+  desensitize: true               # 非私有化模型时开脱敏，防止业务数据出域
+
+framework:
+  type: "web"                       # web / app：决定走哪套 codegen 后端与 LLM 提示词
+  # ----- Web 端（Playwright）-----
+  web:
+    base_url: "http://localhost:8081"   # 被测系统地址，注入到生成的用例
+    mobile: false                       # mobile H5：用移动视口加载页面（仍走 Playwright）
+    # P1：前端源码目录（用于静态抽取 data-testid + 路由，生成 locator 目录 hint）。
+    # 相对路径相对于项目根；也可填绝对路径。设为空字符串则跳过目录抽取（LLM 退化为盲生成）。
+    frontend_src: ""   # 指向被测前端源码目录（相对项目根或绝对路径），用于静态抽取 data-testid+路由生成 locator 目录 hint；留空则跳过目录抽取（LLM 退化为盲生成）
+  # ----- App 端（Appium，仅当 type=app 时生效）-----
+  app:
+    platform_name: "Android"
+    app_package: "com.shopdemo.app"
+    app_activity: ".MainActivity"
+    device_name: "emulator-5554"
+    app: "/path/to/app.apk"
+
+credentials:
+  # P1-B：凭据注册表。这里只声明「有哪些槽位」，真值可以写明文，更推荐引用环境变量 ${VAR}。
+  # LLM 只会看到 ${CRED.admin.username} 这类槽位名，真值在 codegen 前于本机回填。
+  # 环境变量缺失的字段会被跳过（不会用空字符串去填 case）。
+  enabled: true
+  profiles:
+    admin:                                  # 对应 target_demo 种子账号 admin（见 db/init/02-seed.sql）
+      username: admin
+      password: "${TARGET_DEMO_ADMIN_PWD}"  # export TARGET_DEMO_ADMIN_PWD=admin123
+    tester:                                 # 演示账号 tester / 123456
+      username: tester
+      password: "123456"
+
+gate:
+  min_coverage_tags: 1            # 质量门：至少要带 1 个覆盖标签
+  require_assert: true            # 质量门：生成的用例必须有断言（防空跑/伪绿）

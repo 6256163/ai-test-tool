@@ -1,0 +1,24 @@
+{
+  "id": "TC_PURCHASE_001",
+  "title": "登录后搜索产品旗舰版并加入购物车，校验购物车数量与单价一致",
+  "preconditions": ["被测系统已部署，登录页可访问", "存在可搜索的产品「旗舰版」"],
+  "steps": [
+    {"action": "navigate", "locator": null, "value": " /login", "expect": null, "note": "打开登录页"},
+    {"action": "fill", "locator": {"by": "testid", "value": "input-username"}, "value": "admin", "expect": null, "note": "输入用户名 admin"},
+    {"action": "fill", "locator": {"by": "testid", "value": "input-password"}, "value": "admin123", "expect": null, "note": "输入密码 admin123"},
+    {"action": "click", "locator": {"by": "testid", "value": "btn-login"}, "value": null, "expect": null, "note": "点击登录按钮"},
+    {"action": "assert_text", "locator": {"by": "testid", "value": "current-user"}, "value": null, "expect": "admin", "note": "校验登录成功，右上角显示 admin"},
+    {"action": "fill", "locator": {"by": "testid", "value": "input-keyword"}, "value": "旗舰版", "expect": null, "note": "在搜索框输入产品关键字「旗舰版」"},
+    {"action": "click", "locator": {"by": "testid", "value": "btn-search"}, "value": null, "expect": null, "note": "点击搜索按钮"},
+    {"action": "assert_text", "locator": {"by": "testid", "value": "product-name"}, "value": null, "expect": "旗舰版", "note": "校验搜索结果列表出现「旗舰版」"},
+    {"action": "click", "locator": {"by": "testid", "value": "product-name"}, "value": null, "expect": null, "note": "点击搜索结果的第一个产品进入详情"},
+    {"action": "assert_text", "locator": {"by": "testid", "value": "detail-name"}, "value": null, "expect": "旗舰版", "note": "校验进入产品详情页且名称一致"},
+    {"action": "click", "locator": {"by": "testid", "value": "btn-add-cart"}, "value": null, "expect": null, "note": "数量默认 1，点击加入购物车"},
+    {"action": "click", "locator": {"by": "testid", "value": "menu-cart"}, "value": null, "expect": null, "note": "点击导航进入购物车"},
+    {"action": "assert_text", "locator": {"by": "testid", "value": "cart-table"}, "value": null, "expect": "旗舰版", "note": "校验购物车已包含该产品"},
+    {"action": "assert_text", "locator": {"by": "testid", "value": "cart-count"}, "value": null, "expect": "1", "note": "校验购物车中该产品数量为 1"}
+  ],
+  "coverage_tags": ["主流程", "回归"],
+  "target_framework": "playwright",
+  "base_path": " /login"
+}

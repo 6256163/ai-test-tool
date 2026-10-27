@@ -1,0 +1,189 @@
+{
+  "model": "deepseek-chat",
+  "temperature": 0.2,
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一名资深测试开发工程师。根据用户给出的需求/页面描述，生成「一条」结构化 UI 自动化测试用例（Web 端，Playwright）。\n严格遵守输出 JSON schema（字段名、类型、枚举值）。规则：\n1. 步骤覆盖：进入页面 → 关键操作 → 断言。至少包含 1 个断言步骤（assert_*）。\n2. 定位器优先用 testid（data-testid）；若用户消息附带了「被测前端可用定位器清单」，则 locator 必须且只能从该清单里选 testid，严禁自创清单中不存在的 testid；清单未覆盖的元素才退而用 text（可见中文文案）或 role。\n3. value 填实际输入值；expect 填断言期望文本（按 to_contain_text 语义）。\n4. coverage_tags 从 [冒烟, 主流程, 边界, 异常, 回归] 中选 1~3 个。\n5. base_path 填首屏路径，如 /login。\n6. 只输出 JSON，不要任何解释文字。"
+    },
+    {
+      "role": "user",
+      "content": "使用admin/admin123456测试登陆成功流程\n\n【被测前端可用定位器清单（data-testid），生成 locator 只能从中选取】\n路由 /login: login-card, login-tabs, input-username, input-password, btn-login, input-reg-username, input-reg-password, input-reg-email, btn-register\n路由 /products: product-filter-card, input-keyword, select-category, btn-search, product-name, pagination\n路由 /products/:id: product-detail, detail-name, detail-price, detail-stock, detail-cached, input-quantity, btn-add-cart, btn-buy-now\n路由 /cart: cart-card, cart-table, col-product, cart-total, cart-count, btn-cart-clear, btn-checkout\n路由 /orders: orders-card, select-order-status, orders-table, orders-pagination\n路由 /admin/products: admin-products-card, admin-input-keyword, admin-btn-search, admin-btn-create, admin-products-table, admin-pagination, product-dialog, product-input-name, product-input-desc, product-input-price, product-input-stock, product-select-category, product-select-status, product-btn-cancel, product-btn-save\n路由 /admin/orders: admin-orders-card, admin-select-status, admin-btn-refresh, admin-order-stats, admin-orders-table, admin-orders-pagination\n路由 /admin/payment: payment-config-card, config-failure-rate, config-failure-rate-text, config-timeout-rate, config-min-delay, config-max-delay, config-async, config-btn-save\n全局/通用: nav-logo, main-menu, menu-products, menu-cart, menu-orders, menu-admin-products, menu-admin-orders, menu-admin-payment, current-user, btn-logout, payment-dialog, pay-order-no, pay-amount, select-pay-type, select-outcome, pay-result, pay-status, btn-pay-cancel, btn-confirm-pay\n规则：优先用上面清单里的 testid；清单没有的元素才退而用可见文案(text)或角色(role)；严禁自创清单里不存在的 testid。"
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "test_case",
+      "schema": {
+        "$defs": {
+          "Action": {
+            "enum": [
+              "navigate",
+              "click",
+              "fill",
+              "wait",
+              "assert_text",
+              "assert_visible",
+              "assert_url",
+              "assert_count",
+              "scroll",
+              "swipe",
+              "long_press",
+              "launch",
+              "hover",
+              "select"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "Locator": {
+            "properties": {
+              "by": {
+                "$ref": "#/$defs/LocatorStrategy"
+              },
+              "value": {
+                "title": "Value",
+                "type": "string"
+              }
+            },
+            "required": [
+              "by",
+              "value"
+            ],
+            "title": "Locator",
+            "type": "object"
+          },
+          "LocatorStrategy": {
+            "enum": [
+              "css",
+              "xpath",
+              "text",
+              "role",
+              "testid"
+            ],
+            "title": "LocatorStrategy",
+            "type": "string"
+          },
+          "Step": {
+            "properties": {
+              "action": {
+                "$ref": "#/$defs/Action"
+              },
+              "locator": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Locator"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Value"
+              },
+              "expect": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Expect"
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Note"
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "title": "Step",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "id": {
+            "description": "用例唯一标识，如 TC_LOGIN_001",
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "preconditions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Preconditions",
+            "type": "array"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/$defs/Step"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "coverage_tags": {
+            "description": "从[冒烟,主流程,边界,异常,回归]中选",
+            "items": {
+              "type": "string"
+            },
+            "title": "Coverage Tags",
+            "type": "array"
+          },
+          "target_framework": {
+            "default": "playwright",
+            "title": "Target Framework",
+            "type": "string"
+          },
+          "base_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "首屏 URL path，如 /login",
+            "title": "Base Path"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "steps"
+        ],
+        "title": "Case",
+        "type": "object"
+      }
+    }
+  }
+}

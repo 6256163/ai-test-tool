@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_tmp/
+
+# 阶段0 平台落库（含用例 JSON，可能含明文凭据，绝不进仓库）
+data/
+*.db
+
+# macOS
+.DS_Store

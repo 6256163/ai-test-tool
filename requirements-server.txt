@@ -1,0 +1,3 @@
+# 阶段0 平台服务化壳依赖（引擎运行时依赖见 requirements.txt，本文件只补服务层）
+fastapi>=0.110
+uvicorn>=0.27
